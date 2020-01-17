@@ -1,0 +1,26 @@
+[
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "-std=c++11",
+            "-Wsuggest-override",
+            "-fPIC",
+            "-I../../include",
+            "-I../../dep/include",
+            "-g",
+            "-O3",
+            "-march=nocona",
+            "-funsafe-math-optimizations",
+            "-Wall",
+            "-Wextra",
+            "-Wno-unused-parameter",
+            "-DARCH_LIN",
+            "-o",
+            "build/src/receptor.cpp.o",
+            "src/receptor.cpp"
+        ],
+        "directory": "/eidetic/Rack/plugins/AirSticks",
+        "file": "src/receptor.cpp"
+    }
+]

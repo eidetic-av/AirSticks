@@ -1,3 +1,4 @@
+.clangd
 /build
 /dist
 /plugin.so
