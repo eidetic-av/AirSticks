@@ -1,0 +1,27 @@
+{
+  "slug": "AirSticks",
+  "name": "AirSticks",
+  "version": "1.0.0",
+  "license": "mit",
+  "brand": "AirSticks",
+  "author": "eidetic",
+  "authorEmail": "matt.hughes@live.com",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "https://github.com/eidetic-av/AirSticks-VCV",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "Receptor",
+      "name": "Receptor",
+      "description": "AirSticks OSC receiver",
+      "tags": [
+        "airsticks",
+        "osc",
+        "input"
+      ]
+    }
+  ]
+}
