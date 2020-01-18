@@ -30,6 +30,10 @@ struct Receptor : Module {
 		RIGHT_JOYSTICK_Y_OUTPUT,
 		LEFT_BUTTON_3_OUTPUT,
 		LEFT_BUTTON_4_OUTPUT,
+		LEFT_BUTTON_START_OUTPUT,
+		RIGHT_BUTTON_START_OUTPUT,
+		LEFT_BUTTON_JOYSTICK_OUTPUT,
+		RIGHT_BUTTON_JOYSTICK_OUTPUT,
 		RIGHT_BUTTON_4_OUTPUT,
 		RIGHT_BUTTON_3_OUTPUT,
 		LEFT_BUTTON_1_OUTPUT,
@@ -56,7 +60,12 @@ struct Receptor : Module {
 	static std::vector<Receptor*> instances;
 	static bool threadRunning;
 
-	Receptor() { config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS); }
+	std::vector<float> voltageStore;
+
+	Receptor() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		voltageStore.resize(NUM_OUTPUTS);
+	}
 
 	void onAdd() override {
 		if (!threadRunning) {
@@ -72,7 +81,10 @@ struct Receptor : Module {
 		}
 		instances.push_back(this);
 	}
-	void process(const ProcessArgs& args) override {}
+	void process(const ProcessArgs& args) override {
+		for (unsigned int i = 0; i < NUM_OUTPUTS; i++)
+			outputs[i].setVoltage(voltageStore[i]);
+	}
 };
 
 bool Receptor::threadRunning = false;
@@ -92,20 +104,99 @@ void osc::AirSticksListener::ProcessMessage(
 
 			if (std::strcmp(address[3].c_str(), "buttons") == 0) {
 				if (std::strcmp(address[4].c_str(), "pressed") == 0) {
-					receptor->outputs[Receptor::RIGHT_BUTTON_1_OUTPUT]
-						.setVoltage((args++)->AsBool() ? 10 : 0);
-					receptor->outputs[Receptor::RIGHT_BUTTON_2_OUTPUT]
-						.setVoltage((args++)->AsBool() ? 10 : 0);
-					receptor->outputs[Receptor::RIGHT_BUTTON_3_OUTPUT]
-						.setVoltage((args++)->AsBool() ? 10 : 0);
-					receptor->outputs[Receptor::RIGHT_BUTTON_4_OUTPUT]
-						.setVoltage((args++)->AsBool() ? 10 : 0);
-					receptor->outputs[Receptor::RIGHT_TRIGGER_OUTPUT]
-						.setVoltage((args++)->AsBool() ? 10 : 0);
-					receptor->outputs[Receptor::RIGHT_BUMPER_OUTPUT].setVoltage(
-							(args++)->AsBool() ? 10 : 0);
+					if (leftHand) {
+						receptor->voltageStore[Receptor::LEFT_BUTTON_1_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore[Receptor::LEFT_BUTTON_2_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore[Receptor::LEFT_BUTTON_3_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore[Receptor::LEFT_BUTTON_4_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor
+							->voltageStore[Receptor::LEFT_BUTTON_START_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore
+							[Receptor::LEFT_BUTTON_JOYSTICK_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore[Receptor::LEFT_BUMPER_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+					} else {
+						receptor
+							->voltageStore[Receptor::RIGHT_BUTTON_1_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor
+							->voltageStore[Receptor::RIGHT_BUTTON_2_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor
+							->voltageStore[Receptor::RIGHT_BUTTON_3_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor
+							->voltageStore[Receptor::RIGHT_BUTTON_4_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore
+							[Receptor::RIGHT_BUTTON_START_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore
+							[Receptor::RIGHT_BUTTON_JOYSTICK_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+						receptor->voltageStore[Receptor::RIGHT_BUMPER_OUTPUT] =
+							(args++)->AsBool() ? 10.f : 0.f;
+					}
 				}
-			}
+			} else if (std::strcmp(address[3].c_str(), "trigger") == 0) {
+				if (leftHand)
+					receptor->voltageStore[Receptor::LEFT_TRIGGER_OUTPUT] =
+						(args++)->AsFloat() * 10.f;
+				else
+					receptor->voltageStore[Receptor::RIGHT_TRIGGER_OUTPUT] =
+						(args++)->AsFloat() * 10.f;
+			} else if (std::strcmp(address[3].c_str(), "joystick") == 0) {
+				if (leftHand) {
+					receptor->voltageStore[Receptor::LEFT_JOYSTICK_X_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::LEFT_JOYSTICK_Y_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+				} else {
+					receptor->voltageStore[Receptor::RIGHT_JOYSTICK_X_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::RIGHT_JOYSTICK_Y_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+				}
+			} else if (std::strcmp(address[3].c_str(), "pos") == 0) {
+				if (leftHand) {
+					receptor->voltageStore[Receptor::LEFT_POSITION_X_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::LEFT_POSITION_Y_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::LEFT_POSITION_Z_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+				} else {
+					receptor->voltageStore[Receptor::RIGHT_POSITION_X_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::RIGHT_POSITION_Y_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::RIGHT_POSITION_Z_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+				}
+			} else if (std::strcmp(address[3].c_str(), "angles") == 0) {
+				if (leftHand) {
+					receptor->voltageStore[Receptor::LEFT_ROTATION_X_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::LEFT_ROTATION_Y_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::LEFT_ROTATION_Z_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+				} else {
+					receptor->voltageStore[Receptor::RIGHT_ROTATION_X_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::RIGHT_ROTATION_Y_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+					receptor->voltageStore[Receptor::RIGHT_ROTATION_Z_OUTPUT] =
+						(args++)->AsFloat() * 5.f;
+				}
+			} else
+				DEBUG(m.AddressPattern());
 			m.ArgumentsEnd();
 		}
 	}
